@@ -1,0 +1,2 @@
+# CIS545 Big Data Analysis
+CIS545 is a Machine Learning class which focuses on practical problems. It introduced many libraries to solve practical problems, like pandas, sklearn, tensorflow. And used them to build SGD classifiers, dicision tree,  Multi-layer Perceptron, CNN and RNN. It also covered how to preprocess dataset.

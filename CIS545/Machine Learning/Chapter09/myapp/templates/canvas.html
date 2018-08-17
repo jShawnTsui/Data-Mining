@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Canvas Test</title>
+    <meta charset="utf-8">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <form action="/canvas"  enctype="multipart/form-data"  method="POST">
+      <button type="button" onclick="getScreenshot()">Use this image as profile</button>
+      <input type="input" name="PHOTO">
+      <input type="submit" onclick="getScreenshot()" name="submit">
+      </div>
+    </form>
+
+    <canvas id="src" width="200" height="200" style="background-color: #aabbcc"></canvas>
+    <canvas id="write" width="200" height="200" style="background-color: #ddeeff"></canvas>
+    <canvas id="desc" width="100" height="100" style="background-color: #f1f1f1"></canvas>
+    <span id=result>?</span>
+    <script type="text/javascript">
+      var src = document.getElementById('src');
+      var srcCtx = src.getContext('2d');
+      srcCtx.beginPath();
+      srcCtx.moveTo(0,0);
+      srcCtx.lineTo(200, 100);
+      srcCtx.lineWidth = 10;
+      srcCtx.stroke();
+
+      var desc = document.getElementById('desc');
+      var descCtx = desc.getContext('2d');
+      descCtx.scale(0.5,0.5);
+
+      var write = document.getElementById('write');
+      var writeCtx = write.getContext('2d');
+
+      function mousedownfun(evt) {
+        this.down = true;
+        var pos = getMousePos(write, evt);
+        this.X = pos.x;
+        this.Y = pos.y;
+      }
+
+      function mouseupfun(evt) {
+        this.down = false;
+        var image = writeCtx.getImageData(0,0,200,200);
+        descCtx.drawImage(write, 0, 0);
+      }
+
+      function mousemovefun(evt) {
+        this.style.cursor = 'pointer';
+        if (this.down) {
+          var pos = getMousePos(write, evt);
+          posx = pos.x;
+          posy = pos.y;
+          writeCtx.beginPath();
+          writeCtx.moveTo(this.X,this.Y);
+          writeCtx.lineTo(posx, posy);
+          writeCtx.lineWidth = 3;
+          write.lineCap = 'round'
+          writeCtx.stroke();
+          this.X = posx;
+          this.Y = posy;
+        }
+      }
+
+      write.addEventListener('mousedown', mousedownfun, true);
+
+      write.addEventListener('mouseup', mouseupfun, true);
+
+      write.addEventListener('mousemove', mousemovefun, true);
+
+      function getMousePos(canvas,evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: (evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
+          y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height,
+        };
+      }
+
+      function getScreenshot() {
+        var imageData = write.toDataURL("image/png");
+        document.getElementsByName("PHOTO")[0].setAttribute("value", imageData);
+        write.removeEventListener('mousedown', mousedownfun, true);
+        write.removeEventListener('mouseup', mouseupfun, true);
+        write.removeEventListener('mousemove', mousemovefun, true);
+        getPicture();
+        
+      }
+
+      function getXhr() {
+        var xhr = null;
+        if (window.XMLHttpRequest) {
+          xhr = new XMLHttpRequest();
+        } else {
+          xhr = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        return xhr;
+      }
+
+      function getPicture() {
+        var xhr = getXhr();
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            $('#result').text(xhr.responseText);
+          }
+        };
+        xhr.open("POST", "/canvas", true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        var pic = document.getElementsByName("PHOTO")[0];
+        // xhr.send('PHOTO=' + $("input[name='PHOTO']").val());
+        xhr.setRequestHeader('PHOTO', pic.value);
+        xhr.send();
+      }
+
+    </script>
+  </body>
+</html>
